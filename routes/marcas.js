@@ -2,7 +2,7 @@ const express = require('express');
 const Marca = require('../models/Marca');
 const router = express.Router();
 
-router.get('/marcas', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
       const marcas = await Marca.findAll();
       res.json(marcas);

@@ -11,6 +11,7 @@ app.use(express.json());
 app.use("/equipos", equiposRoutes);
 app.use("/direcciones", direccionesRoutes);
 app.use("/marcas", marcasRoutes); 
+app.use("/equipos/:id", equiposRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

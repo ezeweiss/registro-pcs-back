@@ -2,7 +2,7 @@ const express = require('express');
 const Direccion = require('../models/Direccion');
 const router = express.Router();
 
-router.get('/direcciones', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
       console.log('Recibiendo solicitud para obtener direcciones');
       const direcciones = await Direccion.findAll();
