@@ -135,4 +135,48 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+
+// Obtener IPs no usadas
+router.get('/ip-no-usadas', async (req, res) => {
+  try {
+    // Primero, obtener las IPs de los equipos registrados
+    const equipos = await Equipo.findAll({
+      attributes: ['ip'], // Solo necesitamos la IP
+    });
+    
+    // Extraemos las IPs usadas
+    const ipsUsadas = equipos.map(equipo => equipo.ip);
+    
+    // Definir el rango de IPs posibles
+    const startIp = "10.0.14.1";
+    const endIp = "10.0.14.255";
+
+    // Función para generar todas las IPs posibles
+    const generarIpsDisponibles = (ipsUsadas) => {
+      const allIps = [];
+      let start = startIp.split('.').map(Number);
+      let end = endIp.split('.').map(Number);
+
+      for (let i = start[3]; i <= end[3]; i++) {
+        const ip = `${start[0]}.${start[1]}.${start[2]}.${i}`;
+        if (!ipsUsadas.includes(ip)) {
+          allIps.push(ip); // Solo agrega las IPs no usadas
+        }
+      }
+
+      return allIps;
+    };
+
+    // Generar las IPs disponibles
+    const ipsNoUsadas = generarIpsDisponibles(ipsUsadas);
+    
+    // Enviar las IPs no usadas como respuesta
+    res.json(ipsNoUsadas);
+  } catch (error) {
+    console.error("Error al obtener las IPs no usadas:", error);
+    res.status(500).send('Error al obtener las IPs no usadas');
+  }
+});
+
+
 module.exports = router;
