@@ -4,20 +4,19 @@ const Direccion = require('../models/Direccion');
 const Marca = require('../models/Marca');
 const router = express.Router();
 
-// Obtener todos los equipos con las direcciones y marcas
 router.get('/', async (req, res) => {
   try {
     const equipos = await Equipo.findAll({
       include: [
         {
           model: Direccion,
-          as: 'direccion', // Aquí se usa el alias definido en el modelo
-          attributes: ['id', 'direccion']  // Selecciona las columnas necesarias de Direccion
+          as: 'direccion',
+          attributes: ['id', 'direccion']
         },
         {
           model: Marca,
-          as: 'marca', // Aquí se usa el alias definido en el modelo
-          attributes: ['id', 'marca']  // Selecciona las columnas necesarias de Marca
+          as: 'marca',
+          attributes: ['id', 'marca']
         }
       ],
       logging: console.log
@@ -32,44 +31,49 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Agregar un nuevo equipo con direccion y marca
-// Ruta para agregar un nuevo equipo
 router.post('/', async (req, res) => {
   try {
-    // Validamos si la dirección existe
-    const direccionExist = await Direccion.findByPk(req.body.id_dir);
+    const { ip, host, id_dir, id_marca, seriePc, serieMonitor, usuario, sector } = req.body;
+
+    const direccionExist = await Direccion.findByPk(id_dir);
     if (!direccionExist) {
-      return res.status(400).send("La dirección con ese ID no existe");
+      return res.status(400).json({ message: "La dirección con ese ID no existe" });
     }
 
-    // Validamos si la marca existe
-    const marcaExist = await Marca.findByPk(req.body.id_marca);
+    const marcaExist = await Marca.findByPk(id_marca);
     if (!marcaExist) {
-      return res.status(400).send("La marca con ese ID no existe");
+      return res.status(400).json({ message: "La marca con ese ID no existe" });
     }
 
-    // Creamos el nuevo equipo con los datos proporcionados
+    const ipExist = await Equipo.findOne({ where: { ip } });
+    if (ipExist) {
+      return res.status(400).json({ field: "ip", message: "La dirección IP ya está en uso" });
+    }
+
+    const hostExist = await Equipo.findOne({ where: { host } });
+    if (hostExist) {
+      return res.status(400).json({ field: "host", message: "El nombre de host ya está en uso" });
+    }
+
     const nuevoEquipo = await Equipo.create({
-      ip: req.body.ip,
-      host: req.body.host,
-      seriePc: req.body.seriePc,
-      serieMonitor: req.body.serieMonitor,
-      usuario: req.body.usuario,
-      sector: req.body.sector,
-      id_dir: req.body.id_dir, // ID de la dirección
-      id_marca: req.body.id_marca // ID de la marca
+      ip,
+      host,
+      seriePc,
+      serieMonitor,
+      usuario,
+      sector,
+      id_dir,
+      id_marca
     });
 
-    // Devolvemos el nuevo equipo en la respuesta
-    res.json(nuevoEquipo);
+    res.status(201).json(nuevoEquipo);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error al agregar equipo');
+    res.status(500).json({ message: "Error en el servidor" });
   }
 });
 
 
-// Ruta para obtener un equipo por su ID
 router.get('/:id', async (req, res) => {
   try {
     const equipo = await Equipo.findByPk(req.params.id);
@@ -82,17 +86,13 @@ router.get('/:id', async (req, res) => {
 });
 
 
-// Actualizar un equipo
-// En el backend, en tu archivo de rutas (por ejemplo, equipos.js)
 router.put('/:id', async (req, res) => {
   try {
-    // Verifica si el equipo existe
     const equipoExist = await Equipo.findByPk(req.params.id);
     if (!equipoExist) {
       return res.status(400).send("El equipo no existe");
     }
 
-    // Verifica si la dirección y la marca existen
     const direccionExist = await Direccion.findByPk(req.body.id_dir);
     const marcaExist = await Marca.findByPk(req.body.id_marca);
 
@@ -100,7 +100,6 @@ router.put('/:id', async (req, res) => {
       return res.status(400).send("La dirección o la marca no existen");
     }
 
-    // Actualiza el equipo
     const equipoActualizado = await equipoExist.update({
       ip: req.body.ip,
       host: req.body.host,
@@ -108,11 +107,10 @@ router.put('/:id', async (req, res) => {
       serieMonitor: req.body.serieMonitor,
       usuario: req.body.usuario,
       sector: req.body.sector,
-      id_dir: req.body.id_dir,  // ID de la dirección
-      id_marca: req.body.id_marca // ID de la marca
+      id_dir: req.body.id_dir,
+      id_marca: req.body.id_marca
     });
 
-    // Devuelve el equipo actualizado
     res.json(equipoActualizado);
   } catch (error) {
     console.error(error);
@@ -121,7 +119,6 @@ router.put('/:id', async (req, res) => {
 });
 
 
-// Eliminar un equipo
 router.delete('/:id', async (req, res) => {
   try {
     const equipo = await Equipo.findByPk(req.params.id);
@@ -136,22 +133,18 @@ router.delete('/:id', async (req, res) => {
 });
 
 
-// Obtener IPs no usadas
+
 router.get('/ip-no-usadas', async (req, res) => {
   try {
-    // Primero, obtener las IPs de los equipos registrados
     const equipos = await Equipo.findAll({
-      attributes: ['ip'], // Solo necesitamos la IP
+      attributes: ['ip'],
     });
     
-    // Extraemos las IPs usadas
     const ipsUsadas = equipos.map(equipo => equipo.ip);
     
-    // Definir el rango de IPs posibles
     const startIp = "10.0.14.1";
     const endIp = "10.0.14.255";
 
-    // Función para generar todas las IPs posibles
     const generarIpsDisponibles = (ipsUsadas) => {
       const allIps = [];
       let start = startIp.split('.').map(Number);
@@ -160,17 +153,15 @@ router.get('/ip-no-usadas', async (req, res) => {
       for (let i = start[3]; i <= end[3]; i++) {
         const ip = `${start[0]}.${start[1]}.${start[2]}.${i}`;
         if (!ipsUsadas.includes(ip)) {
-          allIps.push(ip); // Solo agrega las IPs no usadas
+          allIps.push(ip);
         }
       }
 
       return allIps;
     };
 
-    // Generar las IPs disponibles
     const ipsNoUsadas = generarIpsDisponibles(ipsUsadas);
     
-    // Enviar las IPs no usadas como respuesta
     res.json(ipsNoUsadas);
   } catch (error) {
     console.error("Error al obtener las IPs no usadas:", error);
