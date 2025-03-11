@@ -17,7 +17,7 @@ const Switch = sequelize.define("Switchs", {
             model: 'Configuraciones',
             key: 'id',
         },
-        allowNull: false,
+        allowNull: true,
         },
     
   },{

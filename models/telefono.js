@@ -18,7 +18,7 @@ const Telefono = sequelize.define("Telefonos", {
             model: 'Configuraciones',
             key: 'id',
         },
-        allowNull: false,
+        allowNull: true,
     },
 }, {
     schema: 'Equipos',
