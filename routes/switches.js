@@ -48,8 +48,6 @@ router.get("/:id", async (req, res) => {
       return res.status(403).json({ error: "Clave incorrecta" });
     }
 
-  
-      // Si la clave es correcta, devolver los datos del switch incluyendo usuario y clave
       const switchWithCredentials = {
         mac: switchData.mac,
         ip: switchData.ip,

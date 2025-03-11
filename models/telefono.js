@@ -2,15 +2,16 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../datos/db");
 const Configuracion = require("./configuracion");
 
-
-const Switch = sequelize.define("Switchs", {
-    mac: { type: DataTypes.STRING, allowNull: false },
+const Telefono = sequelize.define("Telefonos", {
     ip: { type: DataTypes.STRING, allowNull: false },
-    subred: { type: DataTypes.STRING, allowNull: false, unique: true },
+    interno: { type: DataTypes.STRING, allowNull: false },
     usuario: { type: DataTypes.STRING, allowNull: true },
     clave: { type: DataTypes.STRING, allowNull: true },
+    sipUser: { type: DataTypes.STRING, allowNull: true },
+    sipPassword: { type: DataTypes.STRING, allowNull: true },
     sector: { type: DataTypes.STRING, allowNull: true },
-    marca: { type: DataTypes.STRING, allowNull: true},
+    numeroSerie: { type: DataTypes.STRING, allowNull: true },
+    mac: { type: DataTypes.STRING, allowNull: false },
     id_config: { 
         type: DataTypes.INTEGER,
         references: {
@@ -18,21 +19,18 @@ const Switch = sequelize.define("Switchs", {
             key: 'id',
         },
         allowNull: true,
-        },
-    
-  },{
+    },
+}, {
     schema: 'Equipos',
     timestamps: false,
-  }
-    
-  );
+});
 
-  Switch.belongsTo(Configuracion, { foreignKey: 'id_config', as: 'configuracion' });
-  // Relación entre Switch y Configuracion
+Telefono.belongsTo(Configuracion, { foreignKey: 'id_config', as: 'configuracion' });
+
 sequelize.sync({ force: false }).then(() => {
     console.log('Base de datos sincronizada');
-  }).catch(err => {
+}).catch(err => {
     console.error('Error al sincronizar base de datos:', err);
-  });
+});
 
-module.exports = Switch;
+module.exports = Telefono;
